@@ -174,7 +174,7 @@ type GalleryImageInfo struct {
 }
 
 type imageInfoDataWrapper struct {
-	Ii      *ImageInfo `json:"data"`
+	Info    *ImageInfo `json:"data"`
 	Success bool       `json:"success"`
 	Status  int        `json:"status"`
 }

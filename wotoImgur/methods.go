@@ -264,12 +264,14 @@ func (c *ImgurClient) GetImageInfo(id string) (*ImageInfo, error) {
 	if err := dec.Decode(&img); err != nil {
 		return nil, getErr(-1, "Problem decoding json for imageID "+id+" - "+err.Error())
 	}
-	img.Ii.Limit = rl
+	img.Info.Limit = rl
+	c.lastRateLimit = rl
+	c.lastRateLimitErr = nil
 
 	if !img.Success {
 		return nil, getErr(img.Status, "Request to imgur failed for imageID "+id+" - "+strconv.Itoa(img.Status))
 	}
-	return img.Ii, nil
+	return img.Info, nil
 }
 
 // GetRateLimit returns the current rate limit without doing anything else
@@ -286,11 +288,13 @@ func (c *ImgurClient) GetRateLimit() (*RateLimit, error) {
 
 	var bodyDecoded rateLimitDataWrapper
 	if err := dec.Decode(&bodyDecoded); err != nil {
-		return nil, errors.New("Problem decoding json for ratelimit - " + err.Error())
+		c.lastRateLimitErr = errors.New("Problem decoding json for ratelimit - " + err.Error())
+		return nil, c.lastRateLimitErr
 	}
 
 	if !bodyDecoded.Success {
-		return nil, errors.New("Request to imgur failed for ratelimit - " + strconv.Itoa(bodyDecoded.Status))
+		c.lastRateLimitErr = errors.New("Request to imgur failed for ratelimit - " + strconv.Itoa(bodyDecoded.Status))
+		return nil, c.lastRateLimitErr
 	}
 
 	var ret RateLimit
@@ -299,6 +303,8 @@ func (c *ImgurClient) GetRateLimit() (*RateLimit, error) {
 	ret.UserLimit = rl.UserLimit
 	ret.UserRemaining = rl.UserRemaining
 	ret.UserReset = rl.UserReset
+	c.lastRateLimit = &ret
+	c.lastRateLimitErr = nil
 
 	return &ret, nil
 }
@@ -358,9 +364,10 @@ func (c *ImgurClient) UploadImage(image []byte, album, dType, title, description
 		return nil, getErr(img.Status, "Upload to imgur failed with status: "+strconv.Itoa(img.Status))
 	}
 
-	img.Ii.Limit, _ = extractRateLimits(res.Header)
+	img.Info.Limit, _ = extractRateLimits(res.Header)
+	c.lastRateLimit = img.Info.Limit
 
-	return img.Ii, nil
+	return img.Info, nil
 }
 
 // UploadImageFromFile uploads a file given by the filename string to imgur.
