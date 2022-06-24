@@ -1,12 +1,41 @@
 package wotoImgur
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 )
+
+func NewImgurClient(token string, config *ClientConfig) (*ImgurClient, error) {
+	if config == nil {
+		config = GetDefaultConfig()
+	} else {
+		if config.HTTPClient == nil {
+			config.HTTPClient = &http.Client{}
+		}
+	}
+
+	if token == "" {
+		return nil, errors.New("invalid imgur client-id provided")
+	}
+
+	client := &ImgurClient{
+		HTTPClient:    config.HTTPClient,
+		ImgurClientID: token,
+		RapidAPIKey:   config.RapidAPIKey,
+	}
+
+	return client, nil
+}
+
+func GetDefaultConfig() *ClientConfig {
+	return &ClientConfig{
+		HTTPClient: http.DefaultClient,
+	}
+}
 
 func createUploadForm(image []byte, album, dType, title, description string) url.Values {
 	form := url.Values{}

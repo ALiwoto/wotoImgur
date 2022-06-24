@@ -10,6 +10,14 @@ type ImgurClient struct {
 	HTTPClient    *http.Client
 	ImgurClientID string
 	RapidAPIKey   string
+
+	lastRateLimit    *RateLimit
+	lastRateLimitErr error
+}
+
+type ClientConfig struct {
+	HTTPClient  *http.Client
+	RapidAPIKey string
 }
 
 type ImgurError struct {
@@ -46,7 +54,7 @@ type AlbumInfo struct {
 	Link        string      `json:"link"`                 // The URL link to the album
 	Favorite    bool        `json:"favorite"`             // Indicates if the current user favorited the image. Defaults to false if not signed in.
 	Nsfw        bool        `json:"nsfw"`                 // Indicates if the image has been marked as nsfw or not. Defaults to null if information is not available.
-	Section     string      `json:"section"`              // If the image has been categorized by our backend then this will contain the section the image belongs in. (funny, cats, adviceanimals, wtf, etc)
+	Section     string      `json:"section"`              // If the image has been categorized by our backend then this will contain the section the image belongs in. (funny, cats, wtf, etc)
 	Order       int         `json:"order"`                // Order number of the album on the user's album page (defaults to 0 if their albums haven't been reordered)
 	DeleteHash  string      `json:"deletehash,omitempty"` // OPTIONAL, the deletehash, if you're logged in as the album owner
 	ImagesCount int         `json:"images_count"`         // The total number of images in the album
@@ -153,7 +161,7 @@ type GalleryImageInfo struct {
 	CommentCount int        `json:"comment_count"`        // Number of comments on the gallery album.
 	Topic        string     `json:"topic"`                // Topic of the gallery album.
 	TopicID      int        `json:"topic_id"`             // Topic ID of the gallery album.
-	Section      string     `json:"section"`              // If the image has been categorized by our backend then this will contain the section the image belongs in. (funny, cats, adviceanimals, wtf, etc)
+	Section      string     `json:"section"`              // If the image has been categorized by our backend then this will contain the section the image belongs in. (funny, cats, wtf, etc)
 	AccountURL   string     `json:"account_url"`          // The username of the account that uploaded it, or null.
 	AccountID    int        `json:"account_id"`           // The account ID of the account that uploaded it, or null.
 	Ups          int        `json:"ups"`                  // Upvotes for the image
@@ -186,7 +194,7 @@ type ImageInfo struct {
 	Bandwidth   int        `json:"bandwidth"`            // Bandwidth consumed by the image in bytes
 	DeleteHash  string     `json:"deletehash,omitempty"` // OPTIONAL, the deletehash, if you're logged in as the image owner
 	Name        string     `json:"name,omitempty"`       // OPTIONAL, the original filename, if you're logged in as the image owner
-	Section     string     `json:"section"`              // If the image has been categorized by our backend then this will contain the section the image belongs in. (funny, cats, adviceanimals, wtf, etc)
+	Section     string     `json:"section"`              // If the image has been categorized by our backend then this will contain the section the image belongs in. (funny, cats, wtf, etc)
 	Link        string     `json:"link"`                 // The direct link to the the image. (Note: if fetching an animated GIF that was over 20MB in original size, a .gif thumbnail will be returned)
 	Gifv        string     `json:"gifv,omitempty"`       // OPTIONAL, The .gifv link. Only available if the image is animated and type is 'image/gif'.
 	Mp4         string     `json:"mp4,omitempty"`        // OPTIONAL, The direct link to the .mp4. Only available if the image is animated and type is 'image/gif'.
